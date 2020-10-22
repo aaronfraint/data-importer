@@ -1,4 +1,5 @@
 import click
+from pathlib import Path
 
 import os
 from dotenv import load_dotenv, find_dotenv
@@ -6,10 +7,13 @@ from dotenv import load_dotenv, find_dotenv
 import postgis_helpers as pGIS
 
 from .openstreetmap import import_osm_for_dvrpc_region
+from .shapefiles import import_shapefiles
+
 
 load_dotenv(find_dotenv(usecwd=True))
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
+GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
 
 credentials = pGIS.configurations()
 
@@ -74,10 +78,24 @@ def copy(src_db, src_host, table_to_copy, srcschema, targetschema):
     )
 
 
+# IMPORT A FOLDER FULL OF SHAPEFILES
+# ----------------------------------
+
+@click.command()
+@click.argument('folder_subpath')
+def shapefile_folder_on_gdrive(folder_subpath):
+    """Import all .shp files in a given subfolder under GDRIVE_ROOT """
+
+    folder_path = Path(GDRIVE_ROOT) / Path(folder_subpath)
+
+    db = pGIS.PostgreSQL(DB_NAME, **credentials[DB_HOST])
+    import_shapefiles(folder_path, db)
+
+
 # Wire up all the commands
 # ------------------------
 
-all_commands = [osm, copy]
+all_commands = [osm, copy, shapefile_folder_on_gdrive]
 
 for cmd in all_commands:
     main.add_command(cmd)
