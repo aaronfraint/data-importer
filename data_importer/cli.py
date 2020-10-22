@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 
+find_dotenv()
 DB_NAME = os.getenv("DB_NAME")
 
 
@@ -16,7 +17,7 @@ def main():
 @click.command()
 def test():
     print(DB_NAME)
-    print(os.getcwd())
+    # print(os.getcwd())
 
 
 @click.command()
