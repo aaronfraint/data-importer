@@ -16,6 +16,7 @@ def main():
 @click.command()
 def test():
     print(DB_NAME)
+    print(os.getcdwd())
 
 
 @click.command()
