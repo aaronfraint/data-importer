@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 
-find_dotenv()
+load_dotenv(find_dotenv())
 DB_NAME = os.getenv("DB_NAME")
 
 
