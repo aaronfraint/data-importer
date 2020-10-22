@@ -77,7 +77,7 @@ def copy(src_db, src_host, table_to_copy, srcschema, targetschema):
 # Wire up all the commands
 # ------------------------
 
-all_commands = [osm]
+all_commands = [osm, copy]
 
 for cmd in all_commands:
     main.add_command(cmd)
