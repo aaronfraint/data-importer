@@ -1,6 +1,6 @@
 import click
 from pathlib import Path
-
+from datetime import datetime
 import os
 from dotenv import load_dotenv, find_dotenv
 
@@ -80,7 +80,6 @@ def copy(src_db, src_host, table_to_copy, srcschema, targetschema):
 
 # IMPORT A FOLDER FULL OF SHAPEFILES
 # ----------------------------------
-
 @click.command()
 @click.argument('folder_subpath')
 def shapefile_folder_on_gdrive(folder_subpath):
@@ -92,10 +91,63 @@ def shapefile_folder_on_gdrive(folder_subpath):
     import_shapefiles(folder_path, db)
 
 
+# LOAD UP AN ALREADY-CREATED DATABASE
+# -----------------------------------
+@click.command()
+@click.argument("database")
+@click.option(
+    "--folder", "-f",
+    help="Folder where database backups are stored",
+    default=Path(GDRIVE_ROOT) / "SQL databases",
+)
+@click.option(
+    "--database", "-d",
+    help="Name of db, if not using 'DB_NAME'",
+    default=DB_NAME,
+)
+@click.option(
+    "--host", "-h",
+    help="Name of host, if not using 'DB_HOST'",
+    default=DB_HOST,
+)
+def from_dumpfile(folder: str, database: str, host: str):
+    """ Load up a .SQL file created by 'pg_dump'.
+        NOTE!!! This will overwrite the database if you already
+        have a db on your host with the same name.
+    """
+
+    folder = Path(folder) / database
+
+    # Find the one with the highest version tag
+    all_db_files = [x for x in folder.rglob("*.sql")]
+
+    latest_datetime = datetime(1969, 8, 18, 9, 0, 0)
+    latest_file = None
+
+    for db_file in all_db_files:
+        year, month, date, _, hour, minute, second = db_file.name[:-4].split("_d_")[-1].split("_")
+
+        this_dt = datetime(*[int(x) for x in [year, month, date, hour, minute, second]])
+
+        if this_dt > latest_datetime:
+            latest_datetime = this_dt
+            latest_file = db_file
+
+    print(f"Loading db frozen on {latest_datetime} from \n\t-> {latest_file}")
+
+    db = pGIS.PostgreSQL(database, **credentials[host])
+    db.db_load_pgdump_file(latest_file)
+
+
 # Wire up all the commands
 # ------------------------
 
-all_commands = [osm, copy, shapefile_folder_on_gdrive]
+all_commands = [
+    osm,
+    copy,
+    shapefile_folder_on_gdrive,
+    from_dumpfile,
+]
 
 for cmd in all_commands:
     main.add_command(cmd)
