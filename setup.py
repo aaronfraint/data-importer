@@ -10,5 +10,6 @@ setup(
     entry_points="""
         [console_scripts]
         db-import=data_importer.cli:main
+        db-export=data_exporter.cli:main
     """,
 )
