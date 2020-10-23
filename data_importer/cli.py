@@ -8,6 +8,7 @@ import postgis_helpers as pGIS
 
 from .openstreetmap import import_osm_for_dvrpc_region
 from .shapefiles import import_shapefiles
+from .dvrpc_region_transit import import_transit_data
 
 
 load_dotenv(find_dotenv(usecwd=True))
@@ -22,6 +23,12 @@ credentials = pGIS.configurations()
 def main():
     "The command 'DB-IMPORT' is used to import data into PostgreSQL."
     pass
+
+@click.command()
+def dvrpc_transit():
+    """ Download data for all Philly transit providers """
+    db = pGIS.PostgreSQL(DB_NAME, **credentials[DB_HOST])
+    import_transit_data(db)
 
 
 # OPEN STREET MAP
@@ -147,6 +154,7 @@ all_commands = [
     copy,
     shapefile_folder_on_gdrive,
     from_dumpfile,
+    dvrpc_transit,
 ]
 
 for cmd in all_commands:
