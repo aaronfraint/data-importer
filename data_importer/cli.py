@@ -101,7 +101,7 @@ def shapefile_folder_on_gdrive(folder_subpath):
 # LOAD UP AN ALREADY-CREATED DATABASE
 # -----------------------------------
 @click.command()
-@click.argument("database")
+@click.argument("src_database")
 @click.option(
     "--folder", "-f",
     help="Folder where database backups are stored",
@@ -109,7 +109,7 @@ def shapefile_folder_on_gdrive(folder_subpath):
 )
 @click.option(
     "--database", "-d",
-    help="Name of db, if not using 'DB_NAME'",
+    help="Name of new db, if not using 'DB_NAME'",
     default=DB_NAME,
 )
 @click.option(
@@ -117,13 +117,13 @@ def shapefile_folder_on_gdrive(folder_subpath):
     help="Name of host, if not using 'DB_HOST'",
     default=DB_HOST,
 )
-def from_dumpfile(folder: str, database: str, host: str):
+def from_dumpfile(src_database: str, folder: str, database: str, host: str):
     """ Load up a .SQL file created by 'pg_dump'.
         NOTE!!! This will overwrite the database if you already
         have a db on your host with the same name.
     """
 
-    folder = Path(folder) / database
+    folder = Path(folder) / src_database
 
     # Find the one with the highest version tag
     all_db_files = [x for x in folder.rglob("*.sql")]
